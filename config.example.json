@@ -1,0 +1,32 @@
+{
+  "transcriptsBase": "/Users/YOUR_USERNAME/.cursor/projects",
+  "projects": [
+    "Users-YOUR_USERNAME-GitHub-your-project-name"
+  ],
+  "todo": {
+    "listName": "Daily Cursor Tasks"
+  },
+  "reports": {
+    "outputDir": "~/Documents/cursor-reports"
+  },
+  "persona": {
+    "name": "Your Name",
+    "email": "you@cisco.com",
+    "role": "Your Role",
+    "team": "Your Team",
+    "voice": "non-technical, first-person, outcome-focused"
+  },
+  "ai": {
+    "model": "gpt-5-nano"
+  },
+  "webex": {
+    "spaces": []
+  },
+  "jira": {
+    "siteUrl": "https://your-site.atlassian.net",
+    "projectKey": "YOUR_PROJECT",
+    "assignee": "Your Name",
+    "issueType": "Story",
+    "agileTeam": "Your Team"
+  }
+}
