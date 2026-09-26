@@ -11,7 +11,7 @@
   },
   "persona": {
     "name": "Your Name",
-    "email": "you@cisco.com",
+    "email": "you@example.com",
     "role": "Your Role",
     "team": "Your Team",
     "voice": "non-technical, first-person, outcome-focused"

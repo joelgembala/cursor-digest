@@ -1,0 +1,4 @@
+{"role":"user","message":{"content":[{"type":"text","text":"<user_query>Map the fictional Orchard Works onboarding handoff and identify unclear ownership.</user_query>"}]}}
+{"role":"assistant","message":{"content":[{"type":"text","text":"Created a fictional handoff map and listed ownership questions for review."}]}}
+{"role":"user","message":{"content":[{"type":"text","text":"<user_query>Draft an adoption checklist for the fictional internal support workflow pilot.</user_query>"}]}}
+{"role":"assistant","message":{"content":[{"type":"tool_use","name":"Write","input":{"path":"fictional-adoption-checklist.md"}}]}}

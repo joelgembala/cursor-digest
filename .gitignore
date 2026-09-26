@@ -1,5 +1,4 @@
 node_modules/
-package-lock.json
 
 # Credentials and tokens — never commit
 .env

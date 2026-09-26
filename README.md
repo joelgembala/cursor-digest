@@ -1,192 +1,78 @@
 # AutoBrief
 
-The status report you never write. AutoBrief automatically generates daily status reports and weekly updates from your Cursor IDE sessions and Webex conversations. Reports are written by AI in your voice — no manual input required. Action items are pushed to Microsoft To Do, and weekly priorities are converted into draft Jira stories.
+**Turn scattered work activity into a reviewable brief and follow-up tasks.**
 
-All AI processing runs through Cisco's Circuit gateway (chat-ai.cisco.com). No data leaves Cisco's network.
+AutoBrief is a personal workflow automation project that gathers Cursor session activity and optional Webex messages, produces daily and weekly summaries, and routes follow-up work to Microsoft To Do or a local Jira story draft. Its purpose is to make work easier to communicate and follow through on without rebuilding the story from scratch each week.
 
-## What it produces
+**Status:** working prototype with service-specific integrations. The public demonstration runs offline with fictional input. Live integrations and summary quality were not revalidated for this portfolio update.
 
-**Daily report** (weekdays at 5:00 PM) — a structured summary grouped by project:
+[See the executed sample](demo/output.md) · [Run the demo](#try-it-without-accounts-or-credentials) · [Connected setup](docs/setup.md)
 
-- What I Accomplished Today
-- Action Items for Tomorrow
-- Open Questions / Blockers
+## The workflow
 
-**Weekly report** (Fridays at 10:00 AM) — a narrative status update for Teamspace:
-
-- What Moved Forward
-- Where I Need Help
-- Coming Up Next Week
-
-## Sample output
-
-**Daily report:**
-
-```
-## What I Accomplished Today
-
-**Platform Migration**
-- Coordinated with the backend team to finalize the API contract
-  for the new search feature
-- Reviewed the staging deployment with QA and confirmed the three
-  priority bugs from last sprint are resolved
-
-## Action Items for Tomorrow
-- Follow up with DevOps on the production deployment timeline
-- Send the data mapping spreadsheet to the vendor contact
-
-## Open Questions / Blockers
-- Waiting on security team's sign-off for the new API endpoint
+```mermaid
+flowchart LR
+    A[Cursor transcripts] --> C[Collect and normalize]
+    B[Optional Webex messages] --> C
+    C --> D[Circuit AI summary]
+    D --> E[Daily and weekly Markdown]
+    D --> F[Microsoft To Do tasks]
+    D --> G[Local Jira story draft]
+    G --> H[Human review and separate publication]
 ```
 
-**Weekly report excerpt:**
+| Problem | What I built | Intended value |
+| --- | --- | --- |
+| Activity is spread across tools | Configurable transcript and message ingestion | Less manual reconstruction of the work week |
+| Technical activity is hard to explain | Daily briefs and weekly narratives | A starting point for stakeholder communication |
+| Follow-ups get separated from context | Task creation and pending-task retries | A clearer path from discussion to action |
+| Generated stories need review | Local Jira draft output | A review step before publishing work items |
 
-```
-**Platform Migration** — I finalized the API contract with the backend
-team after two rounds of review, which unblocked the frontend work.
-QA confirmed the priority bugs are resolved in staging, and we're
-now waiting on DevOps to schedule the production deployment window.
-```
+These are design goals, not measured time savings or adoption results. Generated summaries and tasks still need human review.
 
-## Architecture
+## My contribution
 
-```
-┌─────────────────────┐     ┌──────────────────────┐
-│   Cursor IDE        │     │   Webex API          │
-│   Agent Transcripts │     │   OAuth 2.0 + PKCE   │
-│   (.jsonl files)    │     │                      │
-└────────┬────────────┘     └────────┬─────────────┘
-         │                           │
-         │  Parse user queries       │  Fetch messages
-         │  + assistant actions      │  Filter to owner's
-         │                           │  conversations
-         └───────────┬───────────────┘
-                     │
-              ┌──────▼──────┐
-              │ Circuit API  │
-              │ (chat-ai)    │
-              │ Summarize    │
-              └──────┬──────┘
-                     │
-         ┌───────────┼───────────────┐
-         │           │               │
-    ┌────▼────┐ ┌────▼─────┐  ┌─────▼──────┐
-    │ Markdown │ │ MS To Do │  │ Jira Story │
-    │ Report   │ │ Tasks    │  │ Proposals  │
-    └─────────┘ └──────────┘  └────────────┘
-```
+I owned problem discovery, requirements, workflow design, integration decisions, validation, and iteration. AI assistants helped with brainstorming and writing code. The work I want this project to demonstrate is translating an operational problem into a practical workflow, then making its inputs, outputs, and failure cases inspectable.
 
-## Prerequisites
+This is an independently owned personal project. Provider names describe integrations and do not imply employer sponsorship or endorsement. The repository keeps its original `cursor-digest` URL; the project is called AutoBrief.
 
-- **Node.js 18+** — `brew install node`
-- **macOS** — uses launchd for scheduling (adaptable to cron on Linux)
-- **Cisco VPN** — required for Circuit API (chat-ai.cisco.com) and id.cisco.com
-- **Circuit credentials** — `BRIDGE_API_CLIENT_ID`, `BRIDGE_API_CLIENT_SECRET`, `BRIDGE_API_APP_KEY`
-- **Webex Integration** — register at [developer.webex.com](https://developer.webex.com/my-apps) with scopes: `spark:messages_read`, `spark:rooms_read`, `spark:kms`, `meeting:transcripts_read`, `meeting:participants_read`, `meeting:schedules_read`
-- **Microsoft To Do** — Azure app registration for device code flow
-- **Jira** (optional) — API token from [Atlassian](https://id.atlassian.com/manage-profile/security/api-tokens)
+## Try it without accounts or credentials
 
-## Quick start
+Requires Node.js 20 or newer; the project has no runtime npm dependencies.
 
-### 1. Clone and install
-
-```bash
-git clone <repo-url>
-cd autobrief
+```sh
+git clone https://github.com/joelgembala/cursor-digest.git
+cd cursor-digest
 npm ci
+npm test
+npm run demo
 ```
 
-### 2. Set up credentials
+The demo copies the actual CLI and libraries into a temporary directory, supplies only fictional transcripts, disables configured services, blocks the adapters' network calls, and writes [the resulting report](demo/output.md). It does not read your Cursor history, load your configuration, create tasks, or install a schedule. Temporary files are removed afterward.
 
-```bash
-cp .env.example .env
-# Edit .env with your Circuit, Webex, MS To Do, and Jira credentials
-```
+**What this proves:** transcript parsing, the dry-run report path, Markdown output, and the no-input case. **What it does not prove:** AI summary accuracy or successful live integrations. The existing dry-run formatter copies input requests under an “accomplished” heading; that heading is not evidence that the requested work was completed.
 
-### 3. Configure your profile
+## Data and service boundaries
 
-```bash
-cp config.example.json config.json
-# Edit config.json with your name, email, projects, and Webex spaces
-```
+| Path | Behavior |
+| --- | --- |
+| `npm run demo` | Fictional local input and local report only |
+| Connected summarization | Selected transcript excerpts and optional Webex messages go to the configured Circuit endpoint |
+| Microsoft To Do | Generated task titles and due dates are sent through Microsoft Graph |
+| Jira | The CLI writes a local draft file; a separate review/publication action is needed |
+| Scheduled runs | macOS launchd starts the configured jobs on the local machine |
 
-### 4. Authorize Webex
+The normal CLI's `--dry-run` is **not an offline switch**: configured Webex spaces may still be read. Use `npm run demo` for the isolated public example. See [setup and limitations](docs/setup.md) before enabling connected operation.
 
-```bash
-node digest.mjs --setup-webex
-```
+## Decisions and current limits
 
-This opens a browser for OAuth authorization. Tokens are saved locally and auto-refresh.
+- Local Markdown reports provide an inspectable output even when downstream task creation fails.
+- Failed task creation is queued for retry; this is not a guarantee against every duplicate or partial failure.
+- Input windows use transcript file modification times, not a complete event ledger.
+- Circuit access is organization-specific, so connected operation is not a universal sign-up-and-run experience.
+- macOS schedules depend on the machine being available. OAuth sessions can expire and require reauthorization.
+- No benchmark for summary accuracy, time saved, or sustained usage is claimed.
 
-### 5. Discover Webex spaces
+Built with JavaScript/Node.js, JSONL, Markdown, OAuth, Microsoft Graph, Webex, Circuit, and macOS launchd.
 
-```bash
-node digest.mjs --list-spaces
-```
-
-Copy the space IDs you want tracked into `config.json` under `webex.spaces`.
-
-### 6. Authorize Microsoft To Do
-
-```bash
-node digest.mjs --setup-todo
-```
-
-### 7. Test
-
-```bash
-node digest.mjs --mode=daily --dry-run    # Test without Circuit API
-node digest.mjs --mode=daily              # Full run (requires VPN)
-```
-
-### 8. Schedule
-
-```bash
-chmod +x install.sh
-./install.sh
-```
-
-This reads your `.env`, generates launchd plist files with your credentials, and loads them. Reports run automatically on schedule.
-
-## CLI reference
-
-| Command | Description |
-|---------|------------|
-| `--mode=daily` | Generate daily report |
-| `--mode=weekly` | Generate weekly report + Jira stories |
-| `--dry-run` | Skip Circuit API, use mock data |
-| `--setup-webex` | Run Webex OAuth authorization flow |
-| `--setup-todo` | Run Microsoft To Do OAuth flow |
-| `--list-spaces` | List Webex spaces with IDs |
-
-## Output locations
-
-| Output | Path |
-|--------|------|
-| Daily reports | `~/Documents/cursor-reports/daily/YYYY-MM-DD.md` |
-| Weekly reports | `~/Documents/cursor-reports/weekly/YYYY-WNN.md` |
-| Jira story proposals | `~/Documents/cursor-reports/weekly/stories-YYYY-WNN.json` |
-| Logs | `~/Library/Logs/autobrief/` |
-
-## Tech stack
-
-| Component | Technology |
-|-----------|-----------|
-| Runtime | Node.js (ES Modules) |
-| AI | Cisco Circuit (chat-ai.cisco.com) |
-| Webex | Webex REST API (OAuth 2.0 + PKCE) |
-| Task Management | Microsoft Graph API (To Do) |
-| Issue Tracking | Jira REST API |
-| Scheduling | macOS launchd (LaunchAgents) |
-| Storage | Local markdown files + JSON |
-
-## Important notes
-
-- **VPN required** — Circuit API calls go through chat-ai.cisco.com and id.cisco.com, both behind Cisco's network. Connect to VPN before running.
-- **Laptop must stay awake** — Closing the lid drops VPN and suspends launchd. Keep the lid open and plugged in for scheduled runs.
-- **Webex filtering** — For group spaces, only conversations you participated in are included (direct messages, thread context, and a 5-minute proximity window around your messages).
-- **Token auto-refresh** — Webex tokens refresh automatically on each run. As long as the tool runs at least once within 90 days, tokens stay alive indefinitely.
-
-## Questions?
-
-Open an issue or reach out to Joel Gembala on Webex.
+[Joel Gembala](https://github.com/joelgembala) · [LinkedIn](https://linkedin.com/in/joelgembala)

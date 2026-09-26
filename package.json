@@ -1,17 +1,21 @@
 {
   "name": "autobrief",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "directories": {
-    "lib": "lib"
-  },
+  "description": "Turn work activity into reviewable briefs and follow-up tasks",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "demo": "node demo/run.mjs",
+    "test": "node --test tests/*.test.mjs"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "workflow-automation",
+    "product-operations",
+    "work-summaries"
+  ],
+  "author": "Joel Gembala",
   "license": "ISC",
   "type": "commonjs",
-  "dependencies": {}
+  "dependencies": {},
+  "engines": {
+    "node": ">=20"
+  }
 }
